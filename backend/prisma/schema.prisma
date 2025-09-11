@@ -1,0 +1,77 @@
+// Prisma schema for Campus Event Management
+// SQLite provider
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model College {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  students Student[]
+  events   Event[]
+}
+
+model Student {
+  id         Int          @id @default(autoincrement())
+  name       String
+  email      String       @unique
+  student_id String       @unique
+  college    College      @relation(fields: [collegeId], references: [id])
+  collegeId  Int
+  registrations Registration[]
+  attendance  Attendance[]
+  feedback    Feedback[]
+}
+
+model Event {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  type        String
+  date        DateTime
+  college     College       @relation(fields: [collegeId], references: [id])
+  collegeId   Int
+  registrations Registration[]
+  attendance  Attendance[]
+  feedback    Feedback[]
+}
+
+model Registration {
+  id          Int      @id @default(autoincrement())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   Int
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     Int
+  registered_at DateTime @default(now())
+
+  @@unique([studentId, eventId])
+}
+
+model Attendance {
+  id          Int      @id @default(autoincrement())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   Int
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     Int
+  attended_at DateTime @default(now())
+
+  @@unique([studentId, eventId])
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId Int
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   Int
+  rating    Int
+  comment   String?
+
+  @@unique([studentId, eventId])
+}

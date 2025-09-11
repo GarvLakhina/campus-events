@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Student Portal - Campus Events</title>
+  </head>
+  <body>
+    <h1>Student Portal</h1>
+
+    <section>
+      <h2>Auth</h2>
+      <label>
+        Student ID:
+        <input id="student_id" placeholder="S1001" />
+      </label>
+      <span>or</span>
+      <label>
+        Email:
+        <input id="email" placeholder="alice@example.com" />
+      </label>
+      <button id="saveAuth">Save</button>
+      <p id="authStatus"></p>
+    </section>
+
+    <section>
+      <h2>Filter by College</h2>
+      <select id="collegeFilter"></select>
+      <button id="loadEvents">Load Events</button>
+    </section>
+
+    <section>
+      <h2>Events</h2>
+      <div id="events"></div>
+    </section>
+
+    <section>
+      <h2>Your Actions</h2>
+      <div>
+        <label>Event ID: <input id="actionEventId" type="number" /></label>
+      </div>
+      <div>
+        <button id="btnRegister">Register</button>
+        <button id="btnAttend">Mark Attendance</button>
+      </div>
+      <div>
+        <label>Rating (1-5): <input id="rating" type="number" min="1" max="5" /></label>
+      </div>
+      <div>
+        <label>Comment: <input id="comment" /></label>
+      </div>
+      <button id="btnFeedback">Submit Feedback</button>
+      <p id="actionResult"></p>
+    </section>
+
+    <script src="/script.js"></script>
+  </body>
+</html>

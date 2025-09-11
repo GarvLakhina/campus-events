@@ -75,4 +75,46 @@ router.get('/feedback/:eventId', async (req, res) => {
   }
 });
 
+// GET /reports/attendance-percentage?collegeId=&type=
+// Returns per-event summary with registrations, attendance, and attendance percentage
+router.get('/attendance-percentage', async (req, res) => {
+  try {
+    const { collegeId, type } = req.query;
+    const where = {};
+    if (collegeId) where.collegeId = Number(collegeId);
+    if (type) where.type = String(type);
+
+    // Get events with counts in a single query using Prisma include _count
+    const events = await prisma.event.findMany({
+      where,
+      include: {
+        _count: { select: { registrations: true, attendance: true } },
+        college: true,
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    const result = events.map(e => {
+      const registrations = e._count.registrations || 0;
+      const attended = e._count.attendance || 0;
+      const attendancePercentage = registrations > 0 ? Math.round((attended / registrations) * 10000) / 100 : 0; // two decimals
+      return {
+        id: e.id,
+        title: e.title,
+        type: e.type,
+        date: e.date,
+        college: e.college ? { id: e.college.id, name: e.college.name } : null,
+        registrations,
+        attended,
+        attendancePercentage,
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to compute attendance percentage' });
+  }
+});
+
 export default router;

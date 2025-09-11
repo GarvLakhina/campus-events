@@ -90,6 +90,12 @@ DATABASE_URL="file:./dev.db"
 PORT=4000
 ```
 
+If `.env` is missing, copy from the example file:
+
+```
+copy backend\.env.example backend\.env
+```
+
 ## Data Schema (Prisma Models)
 - colleges (id, name)
 - students (id, name, email, student_id, college_id)
@@ -114,6 +120,7 @@ Base URL: `http://localhost:4000`
 - POST `/events/:id/attendance` → mark attendance (auth via `student_id` or `email`)
 - POST `/events/:id/feedback` → submit feedback (body: `rating` 1–5, `comment` optional)
 - GET `/reports/event-popularity` → events sorted by registrations desc
+- GET `/reports/attendance-percentage?collegeId=&type=` → per-event registrations, attendance, and attendance percentage
 - GET `/reports/student-participation/:studentId` → events attended by student
 - GET `/reports/top-students` → top 3 most active students
 - GET `/reports/feedback/:eventId` → average rating for an event
@@ -165,6 +172,11 @@ Event popularity report:
 curl http://localhost:4000/reports/event-popularity
 ```
 
+Attendance percentage per event (optionally filter by college and type):
+```
+curl "http://localhost:4000/reports/attendance-percentage?collegeId=1&type=workshop"
+```
+
 Student participation report:
 ```
 curl http://localhost:4000/reports/student-participation/1
@@ -195,3 +207,11 @@ Run with `npm run dev` inside `admin-portal/`.
 - Authentication is intentionally minimal for the assignment (student_id or email only).
 - Prisma enforces unique pairs for registrations, attendance, and feedback.
 - Rating is validated to be between 1 and 5.
+
+## Design & Reports Docs
+
+See the docs in `docs/`:
+
+- `docs/design.md` — assumptions, schema, API design, scaling, and edge cases.
+- `docs/workflows.md` — sequence flows for registration, attendance, feedback, and reporting.
+- `docs/reports.md` — report definitions and example endpoints.

@@ -187,4 +187,74 @@ router.post('/events/:id/feedback', async (req, res) => {
   }
 });
 
+// List registrations for an event with attendance status
+// GET /events/:id/registrations
+router.get('/events/:id/registrations', async (req, res) => {
+  try {
+    const eventId = Number(req.params.id);
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+
+    const regs = await prisma.registration.findMany({
+      where: { eventId },
+      include: { student: true },
+      orderBy: { createdAt: 'asc' },
+    }).catch(async () => {
+      // fallback if createdAt doesn't exist
+      return prisma.registration.findMany({ where: { eventId }, include: { student: true } });
+    });
+
+    const attendance = await prisma.attendance.findMany({ where: { eventId } });
+    const attendedSet = new Set(attendance.map(a => `${a.studentId}`));
+
+    const result = regs.map(r => ({
+      studentId: r.studentId,
+      eventId: r.eventId,
+      student: {
+        id: r.student.id,
+        name: r.student.name,
+        email: r.student.email,
+        student_id: r.student.student_id,
+      },
+      attended: attendedSet.has(String(r.studentId)),
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch registrations' });
+  }
+});
+
+// Unmark attendance (set absent)
+// DELETE /events/:id/attendance  body: { student_id or email }
+router.delete('/events/:id/attendance', async (req, res) => {
+  try {
+    const eventId = Number(req.params.id);
+    const { student_id, email } = req.body || {};
+    if (!student_id && !email) {
+      return res.status(400).json({ error: 'Provide student_id or email' });
+    }
+
+    const student = await prisma.student.findFirst({
+      where: {
+        OR: [
+          student_id ? { student_id } : undefined,
+          email ? { email } : undefined,
+        ].filter(Boolean),
+      },
+    });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    await prisma.attendance.delete({
+      where: { studentId_eventId: { studentId: student.id, eventId } },
+    }).catch(() => {});
+
+    res.json({ message: 'Attendance removed' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to remove attendance' });
+  }
+});
+
 export default router;

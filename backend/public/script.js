@@ -28,13 +28,24 @@ async function loadEvents() {
   const events = await res.json();
   const container = document.getElementById('events');
   container.innerHTML = events.map(e => `
-    <div style="border:1px solid #ccc; padding:8px; margin:6px 0;">
-      <div><b>ID:</b> ${e.id}</div>
-      <div><b>Title:</b> ${e.title}</div>
-      <div><b>Type:</b> ${e.type}</div>
-      <div><b>Date:</b> ${new Date(e.date).toLocaleString()}</div>
-      <div><b>College:</b> ${e.college?.name || e.collegeId}</div>
-      <div><b>Registrations:</b> ${e._count?.registrations || 0}</div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">${e.title}</h5>
+            <span class="badge text-bg-secondary text-capitalize">${e.type}</span>
+          </div>
+          <p class="card-text small text-muted mb-2">
+            <span class="me-2">#${e.id}</span>
+            <span class="me-2">${new Date(e.date).toLocaleString()}</span>
+          </p>
+          <p class="card-text mb-1"><strong>College:</strong> ${e.college?.name || e.collegeId}</p>
+          <p class="card-text mb-3"><strong>Registrations:</strong> ${e._count?.registrations || 0}</p>
+          <div class="mt-auto d-flex gap-2">
+            <button class="btn btn-sm btn-success" onclick="document.getElementById('actionEventId').value='${e.id}';">Select</button>
+          </div>
+        </div>
+      </div>
     </div>
   `).join('');
 }
@@ -86,8 +97,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     setAuth({ student_id, email });
   });
   document.getElementById('loadEvents').addEventListener('click', loadEvents);
-  document.getElementById('btnRegister').addEventListener('click', registerEvent);
-  document.getElementById('btnAttend').addEventListener('click', markAttendance);
   document.getElementById('btnFeedback').addEventListener('click', submitFeedback);
 
   const auth = getAuth();
@@ -95,3 +104,4 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadColleges();
   await loadEvents();
 });
+
